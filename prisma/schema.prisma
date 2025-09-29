@@ -1,0 +1,73 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+	  id            String   @id @default(uuid())
+	  name          String
+	  email         String   @unique
+	  password      String
+	  createdAt     DateTime @default(now())
+
+	  posts         Post[] 
+    transaction   Transaction[]
+	}
+
+model Post {
+  id        String   @id @default(uuid())
+  title     String
+  content   String?
+  createdAt DateTime @default(now())
+
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+}
+
+model Products {
+  id                      String    @id @default(uuid())
+  name                    String
+  description             String?
+  price                   Decimal?  @db.Decimal
+  createdAt               DateTime  @default(now())
+  product_image           String?
+  product_stock           Int?
+
+  transaction_detail      Transaction_Details[] 
+}
+
+model Transaction {
+  id              String    @id @default(uuid())
+  transactionNo   String?
+  qtyAll          Int?
+  subTotal        Decimal?  @db.Decimal
+  transactionDate DateTime  @default(now())
+
+  userId          String
+  user            User      @relation(fields: [userId], references: [id])
+
+  transaction_detail      Transaction_Details[] 
+}
+
+model Transaction_Details {
+  id                String    @id @default(uuid())
+  qty               Int?
+  total             Decimal?  @db.Decimal
+  createdAt         DateTime  @default(now())
+
+  productId         String
+  transactionId     String
+
+  transaction       Transaction     @relation(fields: [transactionId], references: [id])
+  product           Products        @relation(fields: [productId], references: [id])
+}
